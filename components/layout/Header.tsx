@@ -1,17 +1,17 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { navigationConfig } from "@/config/site";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Menu, X, Home } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { navigationConfig } from '@/config/site'
+import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { Menu, X, Home } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export function Header() {
-  const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -22,9 +22,7 @@ export function Header() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-sol to-oro">
               <Home className="h-6 w-6 text-noche" />
             </div>
-            <span className="text-xl font-bold font-playfair text-foreground">
-              CubaProp
-            </span>
+            <span className="text-xl font-bold font-playfair text-foreground">AlmaCuba</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -34,10 +32,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-sol",
-                  pathname === item.href
-                    ? "text-sol"
-                    : "text-muted-foreground"
+                  'text-sm font-medium transition-colors hover:text-sol',
+                  pathname === item.href ? 'text-sol' : 'text-muted-foreground'
                 )}
               >
                 {item.label}
@@ -65,11 +61,7 @@ export function Header() {
               className="flex md:hidden items-center justify-center w-10 h-10 rounded-md hover:bg-muted"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -82,10 +74,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "block px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-muted",
-                  pathname === item.href
-                    ? "bg-muted text-sol"
-                    : "text-foreground"
+                  'block px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-muted',
+                  pathname === item.href ? 'bg-muted text-sol' : 'text-foreground'
                 )}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -104,5 +94,5 @@ export function Header() {
         )}
       </div>
     </header>
-  );
+  )
 }

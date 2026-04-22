@@ -1,11 +1,13 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { navigationConfig } from "@/config/site";
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Avatar } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import {
-  LayoutDashboard,
+  User,
   Home,
   Heart,
   MessageCircle,
@@ -14,108 +16,159 @@ import {
   Menu,
   X,
   Plus,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+  Bell,
+  ChevronRight,
+} from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+
+const MOCK_USER = {
+  name: 'Carlos Pérez',
+  email: 'carlos@example.com',
+  verified: true,
+}
 
 const dashboardNav = [
-  { label: "Mi Perfil", href: "/dashboard/profile", icon: LayoutDashboard },
-  { label: "Mis Propiedades", href: "/dashboard/my-properties", icon: Home },
-  { label: "Nueva Propiedad", href: "/dashboard/new-property", icon: Plus },
-  { label: "Favoritos", href: "/dashboard/favorites", icon: Heart },
-  { label: "Mensajes", href: "/dashboard/messages", icon: MessageCircle },
-  { label: "Configuración", href: "/dashboard/settings", icon: Settings },
-];
+  { label: 'Mi Perfil', href: '/dashboard/profile', icon: User },
+  { label: 'Mis Propiedades', href: '/dashboard/my-properties', icon: Home },
+  { label: 'Nueva Propiedad', href: '/dashboard/new-property', icon: Plus },
+  { label: 'Favoritos', href: '/dashboard/favorites', icon: Heart },
+  { label: 'Mensajes', href: '/dashboard/messages', icon: MessageCircle },
+  { label: 'Configuración', href: '/dashboard/settings', icon: Settings },
+]
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const pathname = usePathname()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const activeLabel = dashboardNav.find((n) => n.href === pathname)?.label ?? 'Dashboard'
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-surface-container-low overflow-hidden">
+
+      {/* ── Mobile overlay ── */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-noche/40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar ── */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border transition-transform duration-300 md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          'fixed left-0 top-0 z-40 h-screen w-60 flex flex-col',
+          'bg-surface-container-lowest border-r border-border/40',
+          'shadow-[var(--shadow-card)] transition-transform duration-300',
+          'md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3 p-6 border-b border-border">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-sol to-oro">
-              <Home className="h-6 w-6 text-noche" />
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border/40">
+          <Link href="/" className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sol to-oro shadow-sm">
+              <Home className="h-4 w-4 text-noche" />
             </div>
-            <span className="text-xl font-bold font-playfair">CubaProp</span>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="ml-auto md:hidden"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+            <span className="text-base font-bold font-playfair text-foreground truncate">AlmaCuba</span>
+          </Link>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="md:hidden p-1 rounded-md hover:bg-muted transition-colors shrink-0"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
-            {dashboardNav.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-sol/10 text-sol"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Logout */}
-          <div className="p-4 border-t border-border">
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link href="/">
-                <LogOut className="h-5 w-5 mr-3" />
-                Cerrar Sesión
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+          {dashboardNav.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsSidebarOpen(false)}
+                className={cn(
+                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
+                  isActive
+                    ? 'bg-sol/10 text-sol'
+                    : 'text-muted-foreground hover:bg-surface-container hover:text-foreground'
+                )}
+              >
+                <Icon className={cn('h-4 w-4 shrink-0 transition-colors', isActive ? 'text-sol' : 'text-muted-foreground group-hover:text-foreground')} />
+                <span className="flex-1 truncate">{item.label}</span>
+                {isActive && <ChevronRight className="h-3 w-3 text-sol/60 shrink-0" />}
               </Link>
-            </Button>
+            )
+          })}
+        </nav>
+
+        <Separator />
+
+        {/* User section */}
+        <div className="px-3 py-3 space-y-1">
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl">
+            <Avatar size="sm" fallback={MOCK_USER.name} verified={MOCK_USER.verified} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground truncate">{MOCK_USER.name}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{MOCK_USER.email}</p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/8 h-8 text-xs"
+            asChild
+          >
+            <Link href="/">
+              <LogOut className="h-3.5 w-3.5" />
+              Cerrar sesión
+            </Link>
+          </Button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 md:ml-64">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-          <div className="flex items-center justify-between p-4">
+      {/* ── Main content ── */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-60">
+
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 border-b border-border/40 bg-surface-container-lowest/95 backdrop-blur-sm">
+          <div className="flex items-center gap-3 px-4 h-14">
             <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="md:hidden"
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5 text-muted-foreground" />
             </button>
-            <h1 className="text-xl font-semibold font-playfair">
-              {dashboardNav.find((n) => n.href === pathname)?.label || "Dashboard"}
-            </h1>
-            <div className="flex items-center gap-4">
-              {/* User Avatar */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sol to-oro text-noche font-semibold">
-                U
+
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-1.5 text-sm flex-1 min-w-0">
+              <span className="text-muted-foreground hidden sm:block">Dashboard</span>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground hidden sm:block shrink-0" />
+              <span className="font-semibold text-foreground truncate">{activeLabel}</span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-coral" />
+              </button>
+              <div className="ml-1">
+                <Avatar size="sm" fallback={MOCK_USER.name} verified={MOCK_USER.verified} />
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-6">{children}</main>
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-5 md:p-6">
+          {children}
+        </main>
       </div>
     </div>
-  );
+  )
 }

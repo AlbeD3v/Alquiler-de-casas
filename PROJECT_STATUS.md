@@ -1,4 +1,4 @@
-# 🎉 CubaProp - PROYECTO COMPLETADO
+# 🎉 AlmaCuba - PROYECTO COMPLETADO
 
 ## 📊 ESTADÍSTICAS FINALES
 
@@ -14,6 +14,7 @@
 ## 🗺️ MAPA COMPLETO DE RUTAS
 
 ### Públicas (8)
+
 ✅ `/` - Landing page con hero, featured properties, locations  
 ✅ `/search` - Búsqueda avanzada con filtros  
 ✅ `/property/[id]` - Detalle de propiedad con galería y booking  
@@ -21,25 +22,28 @@
 ✅ `/contact` - Formulario de contacto  
 ✅ `/privacy` - Política de privacidad  
 ✅ `/terms` - Términos de servicio  
-✅ `/_not-found` - 404 page  
+✅ `/_not-found` - 404 page
 
 ### Autenticación (2)
+
 ✅ `/login` - Iniciar sesión  
-✅ `/register` - Crear cuenta  
+✅ `/register` - Crear cuenta
 
 ### Dashboard (6)
+
 ✅ `/dashboard/profile` - Gestión de perfil  
 ✅ `/dashboard/my-properties` - Mis propiedades  
 ✅ `/dashboard/new-property` - Publicar nueva propiedad  
 ✅ `/dashboard/favorites` - Favoritos guardados  
 ✅ `/dashboard/messages` - Chat en tiempo real  
-✅ `/dashboard/settings` - Configuración  
+✅ `/dashboard/settings` - Configuración
 
 ---
 
 ## 🎨 COMPONENTES CREADOS
 
 ### UI Base (8)
+
 - `button.tsx` - 7 variantes con CVA
 - `card.tsx` - Sistema completo
 - `input.tsx` - Con validación
@@ -49,11 +53,13 @@
 - `Toast.tsx` - Notificaciones
 
 ### Layout (3)
+
 - `Header.tsx` - Con theme toggle y mobile menu
 - `Footer.tsx` - Con links y contacto
 - `DashboardLayout.tsx` - Sidebar navigation
 
 ### Features (10)
+
 - `LoginForm.tsx` - Auth login
 - `RegisterForm.tsx` - Registro con validación
 - `PropertyCard.tsx` - Card con glassmorphism
@@ -73,22 +79,24 @@
 ✅ `useAuth` - Autenticación con localStorage  
 ✅ `useFavorites` - Favoritos con localStorage  
 ✅ `useSearch` - Búsqueda con filtros  
-✅ `useToast` - Notificaciones toast  
+✅ `useToast` - Notificaciones toast
 
 ---
 
 ## 🎯 FEATURES IMPLEMENTADAS
 
 ### Diseño
+
 ✅ Glassmorphism en cards  
 ✅ Dark/Light mode toggle  
 ✅ Framer Motion animations  
 ✅ Blob animations en hero  
 ✅ Gradientes personalizados  
 ✅ Responsive 100%  
-✅ Mobile-first design  
+✅ Mobile-first design
 
 ### Funcionalidad
+
 ✅ Búsqueda con filtros avanzados  
 ✅ Galería de imágenes con navegación  
 ✅ Calculadora de booking  
@@ -97,31 +105,35 @@
 ✅ Formularios con validación  
 ✅ Toast notifications  
 ✅ Loading skeletons  
-✅ 404 page  
+✅ 404 page
 
 ### Arquitectura
+
 ✅ TypeScript strict mode  
 ✅ Type safety completo  
 ✅ App Router (Next.js 16)  
 ✅ Server + Client components  
 ✅ Config files (site, locations, currencies)  
-✅ Design system tokens  
+✅ Design system tokens
 
 ---
 
 ## 🎨 DESIGN SYSTEM
 
 ### Colores
+
 - **Sol**: `#F9A03F` - Primary, CTAs
 - **Noche**: `#1E3D58` - Texto, fondos
 - **Arena**: `#F7F4EA` - Background
 - **Oro**: `#D4AF37` - Acentos, gradientes
 
 ### Tipografía
+
 - **Sans**: Geist
 - **Display**: Playfair Display
 
 ### Variantes de Button
+
 - default, secondary, outline, ghost, destructive, link, golden
 
 ---
@@ -183,7 +195,7 @@ pnpm lint
 ✅ Código TypeScript estricto  
 ✅ Arquitectura escalable  
 ✅ Listo para producción  
-✅ Documentación completa  
+✅ Documentación completa
 
 ---
 
@@ -191,6 +203,6 @@ pnpm lint
 **PAGES**: 17 funcionales  
 **COMPONENTS**: 35+  
 **HOOKS**: 6  
-**ERRORS**: 0  
+**ERRORS**: 0
 
 🎉 **¡PROYECTO LISTO PARA INTEGRACIÓN BACKEND!**

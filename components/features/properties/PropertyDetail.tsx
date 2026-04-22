@@ -1,328 +1,588 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Image from "next/image";
-import { Property } from "@/types/property.types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { formatPrice } from "@/config/currencies";
+import { useState } from 'react'
+import Image from 'next/image'
+import { Property } from '@/types/property.types'
+import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { formatPrice } from '@/config/currencies'
+import { useFavorites } from '@/hooks/useFavorites'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Bed,
-  Bath,
-  MapPin,
-  AreaChart,
-  Heart,
-  Share2,
-  Calendar,
-  Users,
-  CheckCircle,
-  Star,
-  MessageCircle,
-  Phone,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+  Bed, Bath, MapPin, Maximize2, Heart, Share2, Calendar, Users,
+  CheckCircle2, Star, MessageCircle, Phone, ChevronLeft, ChevronRight,
+  Minus, Plus, ShieldCheck, Award, Grid2X2, X, Quote,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface PropertyDetailProps {
-  property: Property;
+  property: Property
+}
+
+interface Review {
+  id: string
+  author: string
+  initials: string
+  rating: number
+  date: string
+  comment: string
+}
+
+const MOCK_REVIEWS: Review[] = [
+  { id: 'r1', author: 'Valentina S.', initials: 'VS', rating: 5, date: 'Marzo 2026', comment: 'Lugar increíble, exactamente como en las fotos. La ubicación es perfecta, a pasos de todo. El propietario fue muy atento y respondió al instante. Sin dudas volvemos.' },
+  { id: 'r2', author: 'Matías R.', initials: 'MR', rating: 5, date: 'Febrero 2026', comment: 'Superó todas nuestras expectativas. La villa es espaciosa, muy limpia y bien equipada. El Malecón a dos cuadras es un plus enorme. 100% recomendada.' },
+  { id: 'r3', author: 'Lucía F.', initials: 'LF', rating: 4, date: 'Enero 2026', comment: 'Muy buena estadía. El lugar es hermoso y el barrio está lleno de vida. Solo restarle una estrella porque el WiFi era un poco lento, pero nada que arruine el viaje.' },
+  { id: 'r4', author: 'Diego M.', initials: 'DM', rating: 5, date: 'Diciembre 2025', comment: 'Qué joya de propiedad. Los techos altos, la decoración colonial, el patio... todo impecable. Carlos es un excelente anfitrión.' },
+]
+
+function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+  const sz = size === 'md' ? 'h-4 w-4' : 'h-3 w-3'
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star key={s} className={cn(sz, s <= rating ? 'text-sol fill-sol' : 'text-border')} />
+      ))}
+    </div>
+  )
+}
+
+const TRANSACTION_LABEL: Record<string, string> = {
+  alquiler: 'Alquiler',
+  venta: 'Venta',
+  compra: 'Compra',
 }
 
 export function PropertyDetail({ property }: PropertyDetailProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showAllImages, setShowAllImages] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [checkIn, setCheckIn] = useState('')
+  const [checkOut, setCheckOut] = useState('')
+  const [guests, setGuests] = useState(1)
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const isFavorited = isFavorite(property.id)
 
-  // Mock images
-  const images = [
-    { url: "/placeholder-property.jpg", alt: `${property.title} - Imagen 1` },
-    { url: "/placeholder-property.jpg", alt: `${property.title} - Imagen 2` },
-    { url: "/placeholder-property.jpg", alt: `${property.title} - Imagen 3` },
-    { url: "/placeholder-property.jpg", alt: `${property.title} - Imagen 4` },
-  ];
+  const images = property.images.length > 0 ? property.images : [
+    { id: 'f1', url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80', alt: `${property.title} - Vista principal`, isPrimary: true, order: 1 },
+    { id: 'f2', url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80', alt: `${property.title} - Sala`, isPrimary: false, order: 2 },
+    { id: 'f3', url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80', alt: `${property.title} - Habitación`, isPrimary: false, order: 3 },
+    { id: 'f4', url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80', alt: `${property.title} - Exterior`, isPrimary: false, order: 4 },
+    { id: 'f5', url: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80', alt: `${property.title} - Jardín`, isPrimary: false, order: 5 },
+  ]
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+  const prevImage = () => setCurrentImageIndex((p) => (p - 1 + images.length) % images.length)
+  const nextImage = () => setCurrentImageIndex((p) => (p + 1) % images.length)
+  const prevLightbox = () => setLightboxIndex((p) => (p - 1 + images.length) % images.length)
+  const nextLightbox = () => setLightboxIndex((p) => (p + 1) % images.length)
 
   const calculateNights = () => {
-    if (!checkIn || !checkOut) return 0;
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return nights > 0 ? nights : 0;
-  };
+    if (!checkIn || !checkOut) return 0
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime()
+    const n = Math.ceil(diff / (1000 * 60 * 60 * 24))
+    return n > 0 ? n : 0
+  }
 
-  const totalPrice = calculateNights() * property.price;
+  const nights = calculateNights()
+  const subtotal = nights * property.price
+  const serviceFee = subtotal * 0.1
+  const total = subtotal + serviceFee
+
+  const today = new Date().toISOString().split('T')[0]
+  const isAlquiler = property.transactionType === 'alquiler'
 
   return (
-    <div className="space-y-6">
-      {/* Image Gallery */}
-      <div className="relative rounded-2xl overflow-hidden bg-muted">
-        <div className="relative h-[500px]">
-          <Image
-            src={images[currentImageIndex].url}
-            alt={images[currentImageIndex].alt}
-            fill
-            className="object-cover"
-          />
-          
-          {/* Navigation Arrows */}
-          <button
-            onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <button
-            onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </div>
+    <>
+      <div className="space-y-8 pb-20 lg:pb-0">
 
-        {/* Thumbnails */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentImageIndex ? "bg-white w-4" : "bg-white/50"
-              }`}
-            />
+      {/* ── Gallery ── */}
+      <div>
+        {/* Desktop grid */}
+        <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[480px] rounded-2xl overflow-hidden">
+          {/* Hero image */}
+          <div className="col-span-2 row-span-2 relative group cursor-pointer" onClick={() => setCurrentImageIndex(0)}>
+            <Image src={images[0]?.url} alt={images[0]?.alt} fill className="object-cover" sizes="50vw" />
+            <div className="absolute inset-0 bg-noche/0 group-hover:bg-noche/10 transition-colors" />
+          </div>
+          {/* 4 thumbnails */}
+          {images.slice(1, 5).map((img, i) => (
+            <div
+              key={img.id}
+              className="relative group cursor-pointer overflow-hidden"
+              onClick={() => setCurrentImageIndex(i + 1)}
+            >
+              <Image src={img.url} alt={img.alt} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="25vw" />
+              {/* "Ver todas" overlay on last visible thumb */}
+              {i === 3 && images.length > 5 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setLightboxIndex(i + 1); setShowAllImages(true) }}
+                  className="absolute inset-0 bg-noche/50 flex flex-col items-center justify-center text-arena gap-1"
+                >
+                  <Grid2X2 className="h-6 w-6" />
+                  <span className="text-sm font-semibold">Ver todas</span>
+                </button>
+              )}
+            </div>
           ))}
         </div>
 
-        {/* Action Buttons */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
-          >
-            <Heart
-              className={`h-5 w-5 ${
-                isFavorite ? "fill-red-500 text-red-500" : "text-foreground"
-              }`}
-            />
+        {/* Mobile carousel */}
+        <div className="md:hidden relative h-72 rounded-2xl overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImageIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0"
+            >
+              <Image src={images[currentImageIndex]?.url} alt={images[currentImageIndex]?.alt} fill className="object-cover" sizes="100vw" />
+            </motion.div>
+          </AnimatePresence>
+          <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow transition-opacity">
+            <ChevronLeft className="h-5 w-5 text-noche" />
           </button>
-          <button className="p-2 rounded-full bg-white/90 hover:bg-white transition-colors">
-            <Share2 className="h-5 w-5" />
+          <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow transition-opacity">
+            <ChevronRight className="h-5 w-5 text-noche" />
+          </button>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, i) => (
+              <button key={i} onClick={() => setCurrentImageIndex(i)}
+                className={cn('h-1.5 rounded-full transition-all', i === currentImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50')}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Action buttons floating */}
+        {/* Lightbox */}
+      <AnimatePresence>
+        {showAllImages && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-noche/95 flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <span className="text-xs text-arena/60">{lightboxIndex + 1} / {images.length}</span>
+              <p className="text-sm text-arena font-medium truncate max-w-[60%]">{images[lightboxIndex]?.alt}</p>
+              <button onClick={() => setShowAllImages(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <X className="h-5 w-5 text-arena" />
+              </button>
+            </div>
+
+            {/* Main image */}
+            <div className="flex-1 relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={lightboxIndex}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0"
+                >
+                  <Image src={images[lightboxIndex]?.url} alt={images[lightboxIndex]?.alt} fill className="object-contain" sizes="100vw" />
+                </motion.div>
+              </AnimatePresence>
+              <button onClick={prevLightbox} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <ChevronLeft className="h-6 w-6 text-arena" />
+              </button>
+              <button onClick={nextLightbox} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <ChevronRight className="h-6 w-6 text-arena" />
+              </button>
+            </div>
+
+            {/* Thumbs strip */}
+            <div className="flex gap-2 px-4 py-3 overflow-x-auto border-t border-white/10">
+              {images.map((img, i) => (
+                <button
+                  key={img.id}
+                  onClick={() => setLightboxIndex(i)}
+                  className={cn('relative h-14 w-20 shrink-0 rounded-lg overflow-hidden transition-all', i === lightboxIndex ? 'ring-2 ring-sol' : 'opacity-50 hover:opacity-80')}
+                >
+                  <Image src={img.url} alt={img.alt} fill className="object-cover" sizes="80px" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex gap-2 justify-end mt-3">
+          <button
+            onClick={() => toggleFavorite(property.id)}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+              isFavorited
+                ? 'bg-coral/10 border-coral/30 text-coral'
+                : 'bg-background border-border text-muted-foreground hover:border-sol/40'
+            )}
+          >
+            <Heart className={cn('h-3.5 w-3.5', isFavorited && 'fill-coral')} />
+            {isFavorited ? 'Guardado' : 'Guardar'}
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border text-muted-foreground hover:border-sol/40 bg-background transition-all">
+            <Share2 className="h-3.5 w-3.5" />
+            Compartir
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* ── Layout principal ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+        {/* ── Columna principal ── */}
+        <div className="lg:col-span-2 space-y-8">
+
           {/* Header */}
           <div>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold font-playfair text-foreground mb-2">
-                  {property.title}
-                </h1>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-sol" />
-                  <span>
-                    {property.location.address}, {property.location.municipality},{" "}
-                    {property.location.province}
-                  </span>
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Badge variant="secondary" className="bg-noche/8 text-foreground border-border/60">
+                {TRANSACTION_LABEL[property.transactionType]}
+              </Badge>
+              {property.isNew && <Badge variant="nuevo">Nuevo</Badge>}
               {property.isFeatured && (
-                <div className="px-3 py-1 rounded-full bg-oro/20 text-oro font-semibold text-sm flex items-center gap-1">
-                  <Star className="h-4 w-4" />
-                  Destacado
-                </div>
+                <Badge variant="premium">
+                  <Star className="h-3 w-3" /> Destacado
+                </Badge>
               )}
             </div>
+            <h1 className="text-3xl md:text-4xl font-bold font-playfair text-foreground leading-tight mb-2">
+              {property.title}
+            </h1>
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 text-sol shrink-0" />
+              {property.location.address}, {property.location.municipality}, {property.location.province}
+            </p>
+          </div>
 
-            {/* Quick Stats */}
-            <div className="flex gap-6 py-4 border-y border-border">
-              <div className="flex items-center gap-2">
-                <Bed className="h-5 w-5 text-sol" />
-                <span className="text-sm">
-                  {property.bedrooms} {property.bedrooms === 1 ? "Habitación" : "Habitaciones"}
-                </span>
+          {/* Quick stats */}
+          <div className="flex flex-wrap gap-3">
+            {[
+              { icon: Bed, label: `${property.bedrooms} ${property.bedrooms === 1 ? 'habitación' : 'habitaciones'}` },
+              { icon: Bath, label: `${property.bathrooms} ${property.bathrooms === 1 ? 'baño' : 'baños'}` },
+              { icon: Maximize2, label: `${property.area} m²` },
+              { icon: Users, label: `Hasta ${property.maxGuests} huéspedes` },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container text-sm">
+                <Icon className="h-4 w-4 text-sol" />
+                <span className="text-foreground font-medium">{label}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Bath className="h-5 w-5 text-sol" />
-                <span className="text-sm">
-                  {property.bathrooms} {property.bathrooms === 1 ? "Baño" : "Baños"}
-                </span>
+            ))}
+          </div>
+
+          <Separator />
+
+          {/* Description */}
+          <div className="space-y-3">
+            <h2 className="text-xl font-semibold font-playfair text-foreground">Descripción</h2>
+            <p className="text-muted-foreground leading-relaxed">{property.description}</p>
+          </div>
+
+          <Separator />
+
+          {/* Amenities */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold font-playfair text-foreground">Lo que incluye</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {property.amenities.map((amenity) => (
+                <div key={amenity} className="flex items-center gap-2.5 py-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-sol shrink-0" />
+                  <span className="text-sm text-foreground">{amenity}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Owner card */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold font-playfair text-foreground">Propietario</h2>
+            <div className="rounded-2xl bg-surface-container-lowest border border-border/40 shadow-[var(--shadow-card)] p-5">
+              <div className="flex items-start gap-4">
+                <Avatar
+                  size="lg"
+                  fallback={property.owner.name}
+                  verified={property.owner.isVerified}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-foreground font-playfair">{property.owner.name}</h3>
+                    {property.owner.isVerified && (
+                      <span className="flex items-center gap-1 text-xs text-sol font-medium">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Verificado
+                      </span>
+                    )}
+                    {property.owner.verificationBadge === 'gold' && (
+                      <span className="flex items-center gap-1 text-xs text-oro font-medium">
+                        <Award className="h-3.5 w-3.5" /> Gold
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 text-sol fill-sol" />
+                      {property.owner.reputation}
+                    </span>
+                    <span className="w-px h-3 bg-border" />
+                    <span>{property.owner.totalTransactions} transacciones</span>
+                    <span className="w-px h-3 bg-border" />
+                    <span>{property.owner.totalProperties} propiedades</span>
+                  </div>
+
+                  {property.owner.bio && (
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-2">
+                      {property.owner.bio}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <AreaChart className="h-5 w-5 text-sol" />
-                <span className="text-sm">{property.area} m²</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-sol" />
-                <span className="text-sm">Hasta {property.maxGuests} huéspedes</span>
+
+              <Separator className="my-4" />
+
+              <div className="flex gap-2">
+                <Button variant="golden" size="sm" className="flex-1">
+                  <MessageCircle className="h-4 w-4" />
+                  Enviar mensaje
+                </Button>
+                {property.owner.phone && (
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Phone className="h-4 w-4" />
+                    Llamar
+                  </Button>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Descripción</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground leading-relaxed">{property.description}</p>
-            </CardContent>
-          </Card>
+          <Separator />
 
-          {/* Amenities */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenidades</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {property.amenities.map((amenity, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-sol" />
-                    <span className="text-sm">{amenity}</span>
-                  </div>
-                ))}
+          {/* Reviews */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold font-playfair text-foreground">Reseñas</h2>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sol/10">
+                <Star className="h-3.5 w-3.5 text-sol fill-sol" />
+                <span className="text-sm font-semibold text-foreground">{property.owner.reputation}</span>
+                <span className="text-xs text-muted-foreground">· {MOCK_REVIEWS.length} reseñas</span>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Owner Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Propietario</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-sol to-oro flex items-center justify-center text-noche text-2xl font-bold">
-                    {property.owner.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{property.owner.name}</h3>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Star className="h-4 w-4 text-sol fill-sol" />
-                      <span>{property.owner.reputation}</span>
-                      <span>•</span>
-                      <span>{property.owner.totalTransactions} transacciones</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {MOCK_REVIEWS.map((review) => (
+                <div key={review.id} className="rounded-2xl bg-surface-container-lowest border border-border/40 p-4 space-y-3">
+                  <Quote className="h-4 w-4 text-sol/40" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">{review.comment}</p>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sol to-oro flex items-center justify-center text-noche text-xs font-bold shrink-0">
+                      {review.initials}
                     </div>
-                    {property.owner.isVerified && (
-                      <div className="flex items-center gap-1 text-xs text-sol mt-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Verificado
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-foreground">{review.author}</p>
+                        <StarRating rating={review.rating} />
                       </div>
-                    )}
+                      <p className="text-[10px] text-muted-foreground">{review.date}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Mensaje
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Llamar
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              ))}
+            </div>
+          </div>
 
-        {/* Booking Card */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <div className="text-3xl font-bold text-foreground">
-                {formatPrice(property.price, property.currency)}
-                {property.transactionType === "alquiler" && (
-                  <span className="text-base text-muted-foreground font-normal"> /noche</span>
+          <Separator />
+
+          {/* Location placeholder */}
+          <div className="space-y-3">
+            <h2 className="text-xl font-semibold font-playfair text-foreground">Ubicación</h2>
+            <div className="rounded-2xl bg-surface-container border border-border/40 h-48 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <MapPin className="h-8 w-8 text-sol" />
+              <div className="text-center">
+                <p className="font-medium text-foreground text-sm">
+                  {property.location.municipality}, {property.location.province}
+                </p>
+                {property.location.address && (
+                  <p className="text-xs mt-0.5">{property.location.address}</p>
+                )}
+                {property.location.coordinates && (
+                  <p className="text-[10px] mt-1 font-mono text-muted-foreground/60">
+                    {property.location.coordinates.lat.toFixed(4)}, {property.location.coordinates.lng.toFixed(4)}
+                  </p>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Date Selection */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Check-in</label>
-                  <Input
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Check-out</label>
-                  <Input
-                    type="date"
-                    value={checkOut}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                    min={checkIn || new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Huéspedes</label>
-                  <select
-                    value={guests}
-                    onChange={(e) => setGuests(Number(e.target.value))}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sol"
-                  >
-                    {Array.from({ length: property.maxGuests }, (_, i) => i + 1).map((num) => (
-                      <option key={num} value={num}>
-                        {num} {num === 1 ? "huésped" : "huéspedes"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground/50">Mapa próximamente</p>
+            </div>
+          </div>
+        </div>
 
-              {/* Price Breakdown */}
-              {calculateNights() > 0 && (
-                <div className="pt-4 border-t border-border space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>
-                      {formatPrice(property.price, property.currency)} x {calculateNights()}{" "}
-                      {calculateNights() === 1 ? "noche" : "noches"}
-                    </span>
-                    <span>{formatPrice(totalPrice, property.currency)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Servicio</span>
-                    <span>{formatPrice(totalPrice * 0.1, property.currency)}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold text-lg pt-2 border-t border-border">
-                    <span>Total</span>
-                    <span>{formatPrice(totalPrice * 1.1, property.currency)}</span>
-                  </div>
+        {/* ── Booking card ── */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 rounded-2xl bg-surface-container-lowest border border-border/40 shadow-[var(--shadow-card-hover)] p-6 space-y-5">
+
+            {/* Price */}
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold text-foreground font-playfair">
+                  {formatPrice(property.price, property.currency)}
+                </span>
+                {isAlquiler && (
+                  <span className="text-sm text-muted-foreground font-normal">/ noche</span>
+                )}
+              </div>
+              {property.owner.reputation > 0 && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <Star className="h-3.5 w-3.5 text-sol fill-sol" />
+                  <span className="font-medium text-foreground">{property.owner.reputation}</span>
+                  <span>·</span>
+                  <span>{property.owner.totalTransactions} reseñas</span>
                 </div>
               )}
+            </div>
 
-              {/* Book Button */}
-              <Button variant="golden" size="lg" className="w-full">
-                <Calendar className="h-5 w-5 mr-2" />
-                Reservar Ahora
-              </Button>
+            <Separator />
 
-              {/* Contact Owner */}
-              <Button variant="outline" className="w-full">
-                <MessageCircle className="h-5 w-5 mr-2" />
-                Contactar Propietario
-              </Button>
-            </CardContent>
-          </Card>
+            {isAlquiler ? (
+              <>
+                {/* Dates grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      Check-in
+                    </label>
+                    <Input
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => setCheckIn(e.target.value)}
+                      min={today}
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      Check-out
+                    </label>
+                    <Input
+                      type="date"
+                      value={checkOut}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      min={checkIn || today}
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Guests stepper */}
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                    Huéspedes
+                  </label>
+                  <div className="flex items-center justify-between border border-input rounded-lg px-3 h-10">
+                    <button
+                      onClick={() => setGuests((g) => Math.max(1, g - 1))}
+                      disabled={guests <= 1}
+                      className="p-1 rounded-md hover:bg-muted transition-colors disabled:opacity-30"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="text-sm font-medium">
+                      {guests} {guests === 1 ? 'huésped' : 'huéspedes'}
+                    </span>
+                    <button
+                      onClick={() => setGuests((g) => Math.min(property.maxGuests, g + 1))}
+                      disabled={guests >= property.maxGuests}
+                      className="p-1 rounded-md hover:bg-muted transition-colors disabled:opacity-30"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Price breakdown */}
+                <AnimatePresence>
+                  {nights > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2 overflow-hidden"
+                    >
+                      <Separator />
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>{formatPrice(property.price, property.currency)} × {nights} {nights === 1 ? 'noche' : 'noches'}</span>
+                        <span>{formatPrice(subtotal, property.currency)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Tarifa de servicio</span>
+                        <span>{formatPrice(serviceFee, property.currency)}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between font-semibold text-base">
+                        <span>Total</span>
+                        <span>{formatPrice(total, property.currency)}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <Button variant="golden" size="lg" className="w-full">
+                  <Calendar className="h-4 w-4" />
+                  {nights > 0 ? 'Confirmar reserva' : 'Seleccioná fechas'}
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Venta / Compra */}
+                <div className="rounded-xl bg-surface-container p-3 text-sm text-muted-foreground text-center">
+                  Precio de {property.transactionType === 'venta' ? 'venta' : 'compra'} negociable. Contactá al propietario para más información.
+                </div>
+                <Button variant="golden" size="lg" className="w-full">
+                  <Calendar className="h-4 w-4" />
+                  Solicitar visita
+                </Button>
+              </>
+            )}
+
+            <Button variant="outline" size="sm" className="w-full">
+              <MessageCircle className="h-4 w-4" />
+              Contactar propietario
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              No se realizan cobros hasta confirmar
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  );
+      </div>
+
+    {/* ── Mobile sticky booking bar ── */}
+    {isAlquiler && (
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-surface-container-lowest border-t border-border/40 shadow-[0_-4px_24px_0_rgba(0,0,0,0.08)] px-4 py-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-foreground font-playfair">{formatPrice(property.price, property.currency)}</span>
+            <span className="text-xs text-muted-foreground">/ noche</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-sol fill-sol" />
+            <span className="text-xs font-medium text-foreground">{property.owner.reputation}</span>
+            <span className="text-xs text-muted-foreground">({property.owner.totalTransactions})</span>
+          </div>
+        </div>
+        <Button variant="golden" size="sm" className="shrink-0 h-9 px-5">
+          <Calendar className="h-3.5 w-3.5" />
+          Reservar
+        </Button>
+      </div>
+    )}
+    </>
+  )
 }
