@@ -16,7 +16,7 @@ interface PropertyCardProps {
   property: Property
   onFavorite?: (id: string) => void
   className?: string
-  variant?: 'card' | 'featured'
+  variant?: 'card' | 'featured' | 'list'
 }
 
 const TRANSACTION_LABEL: Record<string, string> = {
@@ -33,6 +33,89 @@ export function PropertyCard({ property, onFavorite, className, variant = 'card'
     e.preventDefault()
     toggleFavorite(property.id)
     onFavorite?.(property.id)
+  }
+
+  if (variant === 'list') {
+    return (
+      <motion.article
+        initial={{ opacity: 0, x: -16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        className={cn('group', className)}
+      >
+        <Link
+          href={`/property/${property.id}`}
+          className="flex rounded-2xl overflow-hidden bg-surface-container-lowest shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sol"
+        >
+          {/* Image — fixed width */}
+          <div className="relative w-44 sm:w-56 flex-shrink-0 overflow-hidden">
+            <Image
+              src={property.images[0]?.url || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75'}
+              alt={property.images[0]?.alt || property.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="224px"
+            />
+            <div className="absolute inset-0 bg-[var(--overlay-image)]" />
+            <div className="absolute top-2 left-2 flex gap-1">
+              {property.isNew && <Badge variant="nuevo" className="text-[10px] px-1.5 py-0.5">Nuevo</Badge>}
+              {property.isFeatured && <Badge variant="premium" className="text-[10px] px-1.5 py-0.5">Dest.</Badge>}
+            </div>
+            <button
+              onClick={handleFavorite}
+              aria-label={isFavorited ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors"
+            >
+              <Heart className={cn('h-3.5 w-3.5', isFavorited ? 'fill-coral text-coral' : 'text-white')} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+            <div className="space-y-1.5">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold text-foreground font-playfair line-clamp-1 group-hover:text-sol transition-colors">
+                  {property.title}
+                </h3>
+                <Badge variant="secondary" className="shrink-0 text-[10px]">
+                  {TRANSACTION_LABEL[property.transactionType]}
+                </Badge>
+              </div>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3 text-sol shrink-0" />
+                {property.location.municipality}, {property.location.province}
+              </p>
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-0.5">
+                {property.description}
+              </p>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5 text-sol" />{property.bedrooms} hab.</span>
+                <span className="w-px h-3 bg-border" />
+                <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5 text-sol" />{property.bathrooms} baños</span>
+                <span className="w-px h-3 bg-border" />
+                <span className="flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5 text-sol" />{property.area} m²</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="text-base font-bold text-foreground leading-none">
+                    {formatPrice(property.price, property.currency)}
+                  </p>
+                  {property.transactionType === 'alquiler' && (
+                    <p className="text-[10px] text-muted-foreground">/ noche</p>
+                  )}
+                </div>
+                <span className="text-xs font-medium text-sol flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+                  Ver <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </motion.article>
+    )
   }
 
   return (
@@ -56,41 +139,25 @@ export function PropertyCard({ property, onFavorite, className, variant = 'card'
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
-
-          {/* Gradient overlay */}
           <div className="absolute inset-0 bg-[var(--overlay-image)]" />
-
-          {/* Top badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
-            {property.isNew && (
-              <Badge variant="nuevo" className="shadow-sm">Nuevo</Badge>
-            )}
+            {property.isNew && <Badge variant="nuevo" className="shadow-sm">Nuevo</Badge>}
             {property.isFeatured && (
               <Badge variant="premium" className="shadow-sm">
-                <Star className="h-3 w-3" />
-                Destacado
+                <Star className="h-3 w-3" /> Destacado
               </Badge>
             )}
             <Badge variant="secondary" className="bg-noche/70 text-arena border-0 backdrop-blur-sm">
               {TRANSACTION_LABEL[property.transactionType] ?? property.transactionType}
             </Badge>
           </div>
-
-          {/* Favorite */}
           <button
             onClick={handleFavorite}
             aria-label={isFavorited ? 'Quitar de favoritos' : 'Añadir a favoritos'}
             className="absolute top-3 right-3 p-2 rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors"
           >
-            <Heart
-              className={cn(
-                'h-4 w-4 transition-colors',
-                isFavorited ? 'fill-coral text-coral' : 'text-white'
-              )}
-            />
+            <Heart className={cn('h-4 w-4 transition-colors', isFavorited ? 'fill-coral text-coral' : 'text-white')} />
           </button>
-
-          {/* Price chip */}
           <div className="absolute bottom-3 left-3">
             <div className="px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur-sm shadow-sm">
               <p className="text-lg font-bold text-noche leading-none">
@@ -105,7 +172,6 @@ export function PropertyCard({ property, onFavorite, className, variant = 'card'
 
         {/* Body */}
         <div className="p-4 space-y-3">
-          {/* Title & location */}
           <div>
             <h3 className="font-semibold text-foreground font-playfair line-clamp-1 group-hover:text-sol transition-colors">
               {property.title}
@@ -115,36 +181,17 @@ export function PropertyCard({ property, onFavorite, className, variant = 'card'
               {property.location.municipality}, {property.location.province}
             </p>
           </div>
-
-          {/* Features row */}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Bed className="h-3.5 w-3.5 text-sol" />
-              {property.bedrooms} hab.
-            </span>
+            <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5 text-sol" />{property.bedrooms} hab.</span>
             <span className="w-px h-3 bg-border" />
-            <span className="flex items-center gap-1">
-              <Bath className="h-3.5 w-3.5 text-sol" />
-              {property.bathrooms} baños
-            </span>
+            <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5 text-sol" />{property.bathrooms} baños</span>
             <span className="w-px h-3 bg-border" />
-            <span className="flex items-center gap-1">
-              <Maximize2 className="h-3.5 w-3.5 text-sol" />
-              {property.area} m²
-            </span>
+            <span className="flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5 text-sol" />{property.area} m²</span>
           </div>
-
-          {/* Divider + owner */}
           <div className="pt-2 border-t border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Avatar
-                size="xs"
-                fallback={property.owner.name}
-                verified={property.owner.isVerified}
-              />
-              <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                {property.owner.name}
-              </span>
+              <Avatar size="xs" fallback={property.owner.name} verified={property.owner.isVerified} />
+              <span className="text-xs text-muted-foreground truncate max-w-[100px]">{property.owner.name}</span>
             </div>
             <span className="text-xs font-medium text-sol flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
               Ver más <ArrowRight className="h-3 w-3" />

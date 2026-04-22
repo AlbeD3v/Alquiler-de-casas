@@ -76,11 +76,20 @@ export function PropertyCardSkeleton({ className, variant = 'card' }: PropertyCa
   )
 }
 
-export function PropertyCardSkeletonGrid({ count = 6 }: { count?: number }) {
+export function PropertyCardSkeletonGrid({
+  count = 6,
+  columns = 3,
+}: {
+  count?: number
+  columns?: 1 | 2 | 3
+}) {
+  const gridCols = columns === 1 ? 'grid-cols-1' : columns === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  const skeletonVariant = columns === 1 ? 'list' : 'card'
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={cn('grid gap-5', gridCols)}>
       {Array.from({ length: count }).map((_, i) => (
-        <PropertyCardSkeleton key={i} />
+        <PropertyCardSkeleton key={i} variant={skeletonVariant} />
       ))}
     </div>
   )
