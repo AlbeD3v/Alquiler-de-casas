@@ -14,12 +14,39 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bed, Bath, MapPin, Maximize2, Heart, Share2, Calendar, Users,
   CheckCircle2, Star, MessageCircle, Phone, ChevronLeft, ChevronRight,
-  Minus, Plus, ShieldCheck, Award, Grid2X2,
+  Minus, Plus, ShieldCheck, Award, Grid2X2, X, Quote,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface PropertyDetailProps {
   property: Property
+}
+
+interface Review {
+  id: string
+  author: string
+  initials: string
+  rating: number
+  date: string
+  comment: string
+}
+
+const MOCK_REVIEWS: Review[] = [
+  { id: 'r1', author: 'Valentina S.', initials: 'VS', rating: 5, date: 'Marzo 2026', comment: 'Lugar increíble, exactamente como en las fotos. La ubicación es perfecta, a pasos de todo. El propietario fue muy atento y respondió al instante. Sin dudas volvemos.' },
+  { id: 'r2', author: 'Matías R.', initials: 'MR', rating: 5, date: 'Febrero 2026', comment: 'Superó todas nuestras expectativas. La villa es espaciosa, muy limpia y bien equipada. El Malecón a dos cuadras es un plus enorme. 100% recomendada.' },
+  { id: 'r3', author: 'Lucía F.', initials: 'LF', rating: 4, date: 'Enero 2026', comment: 'Muy buena estadía. El lugar es hermoso y el barrio está lleno de vida. Solo restarle una estrella porque el WiFi era un poco lento, pero nada que arruine el viaje.' },
+  { id: 'r4', author: 'Diego M.', initials: 'DM', rating: 5, date: 'Diciembre 2025', comment: 'Qué joya de propiedad. Los techos altos, la decoración colonial, el patio... todo impecable. Carlos es un excelente anfitrión.' },
+]
+
+function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+  const sz = size === 'md' ? 'h-4 w-4' : 'h-3 w-3'
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star key={s} className={cn(sz, s <= rating ? 'text-sol fill-sol' : 'text-border')} />
+      ))}
+    </div>
+  )
 }
 
 const TRANSACTION_LABEL: Record<string, string> = {
@@ -31,6 +58,7 @@ const TRANSACTION_LABEL: Record<string, string> = {
 export function PropertyDetail({ property }: PropertyDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showAllImages, setShowAllImages] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
@@ -47,6 +75,8 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
 
   const prevImage = () => setCurrentImageIndex((p) => (p - 1 + images.length) % images.length)
   const nextImage = () => setCurrentImageIndex((p) => (p + 1) % images.length)
+  const prevLightbox = () => setLightboxIndex((p) => (p - 1 + images.length) % images.length)
+  const nextLightbox = () => setLightboxIndex((p) => (p + 1) % images.length)
 
   const calculateNights = () => {
     if (!checkIn || !checkOut) return 0
@@ -64,7 +94,8 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
   const isAlquiler = property.transactionType === 'alquiler'
 
   return (
-    <div className="space-y-8">
+    <>
+      <div className="space-y-8 pb-20 lg:pb-0">
 
       {/* ── Gallery ── */}
       <div>
@@ -86,7 +117,7 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
               {/* "Ver todas" overlay on last visible thumb */}
               {i === 3 && images.length > 5 && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); setShowAllImages(true) }}
+                  onClick={(e) => { e.stopPropagation(); setLightboxIndex(i + 1); setShowAllImages(true) }}
                   className="absolute inset-0 bg-noche/50 flex flex-col items-center justify-center text-arena gap-1"
                 >
                   <Grid2X2 className="h-6 w-6" />
@@ -127,7 +158,64 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
         </div>
 
         {/* Action buttons floating */}
-        <div className="flex gap-2 justify-end mt-3">
+        {/* Lightbox */}
+      <AnimatePresence>
+        {showAllImages && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-noche/95 flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <span className="text-xs text-arena/60">{lightboxIndex + 1} / {images.length}</span>
+              <p className="text-sm text-arena font-medium truncate max-w-[60%]">{images[lightboxIndex]?.alt}</p>
+              <button onClick={() => setShowAllImages(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <X className="h-5 w-5 text-arena" />
+              </button>
+            </div>
+
+            {/* Main image */}
+            <div className="flex-1 relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={lightboxIndex}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0"
+                >
+                  <Image src={images[lightboxIndex]?.url} alt={images[lightboxIndex]?.alt} fill className="object-contain" sizes="100vw" />
+                </motion.div>
+              </AnimatePresence>
+              <button onClick={prevLightbox} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <ChevronLeft className="h-6 w-6 text-arena" />
+              </button>
+              <button onClick={nextLightbox} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                <ChevronRight className="h-6 w-6 text-arena" />
+              </button>
+            </div>
+
+            {/* Thumbs strip */}
+            <div className="flex gap-2 px-4 py-3 overflow-x-auto border-t border-white/10">
+              {images.map((img, i) => (
+                <button
+                  key={img.id}
+                  onClick={() => setLightboxIndex(i)}
+                  className={cn('relative h-14 w-20 shrink-0 rounded-lg overflow-hidden transition-all', i === lightboxIndex ? 'ring-2 ring-sol' : 'opacity-50 hover:opacity-80')}
+                >
+                  <Image src={img.url} alt={img.alt} fill className="object-cover" sizes="80px" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex gap-2 justify-end mt-3">
           <button
             onClick={() => toggleFavorite(property.id)}
             className={cn(
@@ -273,6 +361,40 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
                   </Button>
                 )}
               </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Reviews */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold font-playfair text-foreground">Reseñas</h2>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sol/10">
+                <Star className="h-3.5 w-3.5 text-sol fill-sol" />
+                <span className="text-sm font-semibold text-foreground">{property.owner.reputation}</span>
+                <span className="text-xs text-muted-foreground">· {MOCK_REVIEWS.length} reseñas</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {MOCK_REVIEWS.map((review) => (
+                <div key={review.id} className="rounded-2xl bg-surface-container-lowest border border-border/40 p-4 space-y-3">
+                  <Quote className="h-4 w-4 text-sol/40" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">{review.comment}</p>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sol to-oro flex items-center justify-center text-noche text-xs font-bold shrink-0">
+                      {review.initials}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-foreground">{review.author}</p>
+                        <StarRating rating={review.rating} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">{review.date}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -439,6 +561,28 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+    {/* ── Mobile sticky booking bar ── */}
+    {isAlquiler && (
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-surface-container-lowest border-t border-border/40 shadow-[0_-4px_24px_0_rgba(0,0,0,0.08)] px-4 py-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-foreground font-playfair">{formatPrice(property.price, property.currency)}</span>
+            <span className="text-xs text-muted-foreground">/ noche</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-sol fill-sol" />
+            <span className="text-xs font-medium text-foreground">{property.owner.reputation}</span>
+            <span className="text-xs text-muted-foreground">({property.owner.totalTransactions})</span>
+          </div>
+        </div>
+        <Button variant="golden" size="sm" className="shrink-0 h-9 px-5">
+          <Calendar className="h-3.5 w-3.5" />
+          Reservar
+        </Button>
+      </div>
+    )}
+    </>
   )
 }

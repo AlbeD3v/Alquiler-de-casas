@@ -25,6 +25,13 @@ const mockProperties: Property[] = [
   { id: 'PROP-008', title: 'Habitación en Casa Particular — Santiago', description: 'Habitación privada con baño propio en el corazón de Santiago de Cuba, cerca de todo.', price: 25, currency: 'USD', propertyType: 'habitacion', transactionType: 'alquiler', location: { province: 'Santiago de Cuba', municipality: 'Santiago de Cuba', address: 'Calle Heredia #30' }, bedrooms: 1, bathrooms: 1, maxGuests: 2, area: 25, amenities: ['WiFi', 'A/C', 'Desayuno'], images: [{ id: 'img-8', url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=75', alt: 'Habitación Santiago', isPrimary: true, order: 1 }], owner: { id: 'user-8', name: 'Mirta López', email: 'mirta@example.com', reputation: 4.9, totalProperties: 2, totalTransactions: 89, isVerified: true, role: 'user', createdAt: new Date(), updatedAt: new Date() }, status: 'available', createdAt: new Date('2024-02-01'), updatedAt: new Date(), isNew: true },
 ]
 
+const QUICK_SEARCHES = [
+  { label: 'La Habana', query: '', location: 'La Habana' },
+  { label: 'Varadero', query: '', location: 'Matanzas' },
+  { label: 'Trinidad', query: 'Trinidad', location: '' },
+  { label: 'Viñales', query: 'Viñales', location: '' },
+]
+
 type SortKey = 'newest' | 'price_asc' | 'price_desc' | 'area'
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'newest', label: 'Más recientes' },
@@ -236,18 +243,29 @@ function SearchPageContent() {
               {isLoading ? (
                 <PropertyCardSkeletonGrid count={6} columns={viewMode === 'grid' ? 3 : 1} />
               ) : filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-5">
                   <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center">
                     <SearchX className="h-7 w-7 text-muted-foreground" />
                   </div>
                   <div>
                     <p className="font-semibold text-foreground font-playfair text-lg">Sin resultados</p>
                     <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                      No encontramos propiedades con esos criterios. Probá ampliando los filtros.
+                      No encontramos propiedades con esos criterios. Probá ampliando los filtros o explorá estas búsquedas:
                     </p>
                   </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {QUICK_SEARCHES.map((qs) => (
+                      <button
+                        key={qs.label}
+                        onClick={() => { setSearchQuery(qs.query); setSearchLocation(qs.location); setFilters({}) }}
+                        className="px-4 py-1.5 rounded-full text-xs font-medium bg-sol/10 text-sol border border-sol/20 hover:bg-sol/20 transition-colors"
+                      >
+                        {qs.label}
+                      </button>
+                    ))}
+                  </div>
                   <Button variant="outline" size="sm" onClick={handleReset}>
-                    <X className="h-3.5 w-3.5" /> Limpiar filtros
+                    <X className="h-3.5 w-3.5" /> Limpiar todo
                   </Button>
                 </div>
               ) : (
