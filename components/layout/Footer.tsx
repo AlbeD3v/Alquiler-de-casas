@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Home, Mail, Phone, MapPin } from "lucide-react";
-import { siteConfig, navigationConfig } from "@/config/site";
+import Link from 'next/link'
+import { Home, Mail, Phone, MapPin } from 'lucide-react'
+import { siteConfig, navigationConfig } from '@/config/site'
 
 export function Footer() {
   return (
@@ -13,13 +13,9 @@ export function Footer() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-sol to-oro">
                 <Home className="h-6 w-6 text-noche" />
               </div>
-              <span className="text-xl font-bold font-playfair">
-                CubaProp
-              </span>
+              <span className="text-xl font-bold font-playfair">CubaProp</span>
             </Link>
-            <p className="text-sm text-arena/70">
-              {siteConfig.description}
-            </p>
+            <p className="text-sm text-arena/70">{siteConfig.description}</p>
           </div>
 
           {/* Navigation */}
@@ -94,9 +90,7 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-sol" />
-                <span className="text-sm text-arena/70">
-                  La Habana, Cuba
-                </span>
+                <span className="text-sm text-arena/70">La Habana, Cuba</span>
               </li>
             </ul>
           </div>
@@ -110,5 +104,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

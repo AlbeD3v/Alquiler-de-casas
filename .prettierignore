@@ -1,0 +1,25 @@
+# Build outputs
+.next/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Generated
+playwright-report/
+test-results/
+coverage/
+
+# Misc
+.env
+.env.local
+.env.*.local
+
+# Package files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

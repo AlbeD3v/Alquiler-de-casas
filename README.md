@@ -12,6 +12,7 @@
 ## ✨ Características Principales
 
 ### 🎨 **Diseño Premium**
+
 - **Glassmorphism** en tarjetas y componentes
 - **Animaciones fluidas** con Framer Motion
 - **Modo Claro/Oscuro** con toggle
@@ -19,23 +20,27 @@
 - **Tipografía profesional**: Inter + Playfair Display
 
 ### 🔍 **Búsqueda Avanzada**
+
 - Filtros por ubicación, precio, tipo, habitaciones, área
 - Búsqueda por texto en títulos y amenidades
 - Vista en grid o lista
 - Resultados en tiempo real
 
 ### 🏡 **Propiedades**
+
 - Galería de imágenes con navegación
 - Detalle completo de propiedades
 - Sistema de favoritos
 - Información del propietario con reputación
 
 ### 💬 **Mensajería**
+
 - Chat en tiempo real entre usuarios
 - Lista de conversaciones
 - Mensajes no leídos
 
 ### 👤 **Dashboard de Usuario**
+
 - Gestión de perfil
 - Mis propiedades
 - Favoritos guardados
@@ -46,7 +51,7 @@
 ### Prerequisites
 
 ```bash
-Node.js 18+ 
+Node.js 18+
 pnpm (recomendado) o npm
 ```
 
@@ -149,12 +154,12 @@ Casa_Alquiler_Cubano/
 
 ### Colores
 
-| Nombre | Hex | Uso |
-|--------|-----|-----|
-| Sol | `#F9A03F` | Primary, CTAs, acentos |
-| Noche | `#1E3D58` | Texto, fondos oscuros |
-| Arena | `#F7F4EA` | Background, áreas claras |
-| Oro | `#D4AF37` | Gradientes, destacados |
+| Nombre | Hex       | Uso                      |
+| ------ | --------- | ------------------------ |
+| Sol    | `#F9A03F` | Primary, CTAs, acentos   |
+| Noche  | `#1E3D58` | Texto, fondos oscuros    |
+| Arena  | `#F7F4EA` | Background, áreas claras |
+| Oro    | `#D4AF37` | Gradientes, destacados   |
 
 ### Tipografía
 
@@ -171,6 +176,7 @@ Casa_Alquiler_Cubano/
 ## 🗺️ Rutas Disponibles
 
 ### Públicas
+
 - `/` - Landing page
 - `/search` - Búsqueda de propiedades
 - `/property/[id]` - Detalle de propiedad
@@ -180,10 +186,12 @@ Casa_Alquiler_Cubano/
 - `/terms` - Términos de servicio
 
 ### Autenticación
+
 - `/login` - Iniciar sesión
 - `/register` - Crear cuenta
 
 ### Dashboard (Requiere auth)
+
 - `/dashboard/profile` - Mi perfil
 - `/dashboard/my-properties` - Mis propiedades
 - `/dashboard/favorites` - Favoritos
@@ -192,6 +200,7 @@ Casa_Alquiler_Cubano/
 ## 🔧 Tecnologías
 
 ### Frontend
+
 - **Next.js 16** - React framework
 - **TypeScript** - Type safety
 - **Tailwind CSS 4** - Estilos
@@ -199,6 +208,7 @@ Casa_Alquiler_Cubano/
 - **Lucide React** - Iconos
 
 ### Arquitectura
+
 - **App Router** - Next.js routing
 - **Server Components** - Rendimiento
 - **Client Components** - Interactividad
@@ -216,18 +226,21 @@ El proyecto está diseñado para integrarse con el MCP `casa-alquiler-cubano`:
 ## 📝 Próximos Pasos (Roadmap)
 
 ### Fase 1: Backend ✅
+
 - [ ] Integración con MongoDB
 - [ ] NextAuth.js configuración
 - [ ] API routes para propiedades
 - [ ] Upload de imágenes
 
 ### Fase 2: Features Avanzadas 🚧
+
 - [ ] WebSockets para chat en tiempo real
 - [ ] Sistema de reputación
 - [ ] Notificaciones push
 - [ ] PWA para móvil
 
 ### Fase 3: Optimización ⏳
+
 - [ ] Tests unitarios
 - [ ] Tests E2E con Playwright
 - [ ] Optimización de imágenes

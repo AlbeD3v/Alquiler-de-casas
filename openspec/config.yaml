@@ -1,0 +1,67 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 16 + React 19 + TypeScript 5
+  Architecture: App Router, feature-based components
+  Testing: Vitest + React Testing Library
+  Style: Tailwind v4, ESLint 9, shadcn/ui patterns
+  Package: pnpm workspace with MCP server
+
+strict_tdd: true
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Load relevant coding skills for the project stack
+  verify:
+    - Run tests if test infrastructure exists
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  strict_tdd: true
+  detected: '2026-04-21'
+  runner:
+    available: true
+    framework: vitest
+    command: 'pnpm test'
+  layers:
+    unit:
+      available: true
+      tool: vitest + @testing-library/react
+    integration:
+      available: true
+      tool: vitest + happy-dom
+    e2e:
+      available: true
+      tool: playwright
+  coverage:
+    available: true
+    command: 'vitest --coverage'
+  quality:
+    linter:
+      available: true
+      tool: eslint
+      command: 'eslint'
+    type_checker:
+      available: true
+      tool: typescript
+      command: 'tsc --noEmit'
+    formatter:
+      available: true
+      tool: prettier
+      command: 'pnpm format'

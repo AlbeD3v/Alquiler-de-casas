@@ -1,18 +1,11 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils'
 
 interface SkeletonProps {
-  className?: string;
+  className?: string
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div
-      className={cn(
-        "animate-pulse rounded-md bg-muted",
-        className
-      )}
-    />
-  );
+  return <div className={cn('animate-pulse rounded-md bg-muted', className)} />
 }
 
 export function PropertyCardSkeleton() {
@@ -20,7 +13,7 @@ export function PropertyCardSkeleton() {
     <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
       {/* Image Skeleton */}
       <div className="h-64 bg-muted" />
-      
+
       {/* Content Skeleton */}
       <div className="p-5 space-y-4">
         <Skeleton className="h-6 w-3/4" />
@@ -38,7 +31,7 @@ export function PropertyCardSkeleton() {
         <Skeleton className="h-10 w-full rounded-md" />
       </div>
     </div>
-  );
+  )
 }
 
 export function PageSkeleton() {
@@ -52,5 +45,5 @@ export function PageSkeleton() {
         ))}
       </div>
     </div>
-  );
+  )
 }
